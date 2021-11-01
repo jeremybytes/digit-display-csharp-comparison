@@ -55,5 +55,26 @@ namespace digits
             var validation = data.GetRange(offset, count);
             return (training, validation);
         }
+
+        public static List<List<Record>> ChunkData(List<Record> data, int chunks)
+        {
+            List<List<Record>> results = new();
+            var chunk_size = data.Count() / chunks;
+            var remainder = data.Count() % chunks;
+            for (int i = 0; i < chunks; i++)
+            {
+                if (i != chunks-1)
+                {
+                    var chunk = data.GetRange(i*chunk_size, chunk_size);
+                    results.Add(chunk);
+                }
+                else
+                {
+                    var chunk = data.GetRange(i*chunk_size, chunk_size+remainder);
+                    results.Add(chunk);
+                }
+            }
+            return results;
+        }
     }
 }
