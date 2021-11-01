@@ -5,4 +5,15 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
+  <Target Name="CopyDataFiles" AfterTargets="Build">
+    <ItemGroup>
+      <DataFiles Include="$(ProjectDir)*.csv"/>
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(DataFiles)"
+      DestinationFolder="$(TargetDir)\"
+      SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>
