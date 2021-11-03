@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using CommandLine;
 
 namespace digits
 {
@@ -10,9 +11,24 @@ namespace digits
     {
         static async Task Main(string[] args)
         {
-            int offset = 1000;
-            int count = 300;
-            int threads = 15;
+            int offset = 0;
+            int count = 10;
+            string classifier_option = "";
+            int threads = 6;
+
+            CommandLine.Parser.Default.ParseArguments<Configuration>(args)
+                .WithParsed(c =>
+                {
+                    offset = c.Offset;
+                    count = c.Count;
+                    threads = c.Threads;
+                    classifier_option = c.Classifier.ToLower()
+                        switch {
+                            "euclidean" => "euclidean",
+                            "manhattan" => "manhattan",
+                            _ => "euclidean",
+                        };
+                });
 
             var start = DateTime.Now;
             List<Prediction> errors = new();
@@ -21,9 +37,15 @@ namespace digits
             Console.Clear();
             Console.WriteLine("Data Load Complete...");
 
-            var classifier = new EuclideanClassifier(training);
+            Classifier classifier = classifier_option
+                switch {
+                    "euclidean" => new EuclideanClassifier(training),
+                    "manhattan" => new ManhattanClassifier(training),
+                    _ => new EuclideanClassifier(training),
+                };
 
             var chunks = FileLoader.ChunkData(validation, threads);
+            Console.WriteLine("Chunking Complete...");
 
             var channel = Channel.CreateUnbounded<Prediction>();
             var listener = Listen(channel.Reader, errors);

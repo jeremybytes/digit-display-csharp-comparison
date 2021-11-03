@@ -5,15 +5,16 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+  </ItemGroup>
+
   <Target Name="CopyDataFiles" AfterTargets="Build">
     <ItemGroup>
-      <DataFiles Include="$(ProjectDir)*.csv"/>
+      <DataFiles Include="$(ProjectDir)*.csv" />
     </ItemGroup>
 
-    <Copy
-      SourceFiles="@(DataFiles)"
-      DestinationFolder="$(TargetDir)\"
-      SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(DataFiles)" DestinationFolder="$(TargetDir)\" SkipUnchangedFiles="true" />
   </Target>
 
 </Project>
