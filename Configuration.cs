@@ -13,7 +13,7 @@ namespace digits
         [Option(longName: "classifier", Required = false, HelpText = "Classifier to use (default: 'euclidean')", Default = "euclidean")]
         public string Classifier { get; set; }
 
-        [Option(shortName: 't', longName: "threads", Required = false, HelpText = "Number of threads to use (default: 6)", Default = 6)]
-        public int Threads { get; set; }
+        [Option(shortName: 't', longName: "tasks", Required = false, HelpText = "Number of tasks to use (default: 6)", Default = 6)]
+        public int Tasks { get; set; }
     }
 }

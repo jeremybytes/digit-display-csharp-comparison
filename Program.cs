@@ -14,20 +14,23 @@ namespace digits
             int offset = 0;
             int count = 10;
             string classifier_option = "";
-            int threads = 6;
+            int tasks = 6;
 
             CommandLine.Parser.Default.ParseArguments<Configuration>(args)
                 .WithParsed(c =>
                 {
                     offset = c.Offset;
                     count = c.Count;
-                    threads = c.Threads;
+                    tasks = c.Tasks;
                     classifier_option = c.Classifier.ToLower()
                         switch {
                             "euclidean" => "euclidean",
                             "manhattan" => "manhattan",
                             _ => "euclidean",
                         };
+                }).WithNotParsed(c =>
+                {
+                    Environment.Exit(0);
                 });
 
             var start = DateTime.Now;
@@ -44,7 +47,7 @@ namespace digits
                     _ => new EuclideanClassifier(training),
                 };
 
-            var chunks = FileLoader.ChunkData(validation, threads);
+            var chunks = FileLoader.ChunkData(validation, tasks);
             Console.WriteLine("Chunking Complete...");
 
             var channel = Channel.CreateUnbounded<Prediction>();
