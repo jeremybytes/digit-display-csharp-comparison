@@ -64,6 +64,33 @@ foreach (var item in errors)
 PrintSummary(classifier, offset, count, elapsed, errors.Count);
 
 
+static async Task Produce(ChannelWriter<Prediction> writer,
+    Classifier classifier, List<Record> validation, int threads)
+{
+    await Parallel.ForEachAsync(
+        validation,
+        new ParallelOptions() { MaxDegreeOfParallelism = threads },
+        async (imageData, token) =>
+        {
+            var result = classifier.Predict(new(imageData.Value, imageData.Image));
+            await writer.WriteAsync(result, token);
+        });
+
+    writer.Complete();
+}
+
+static async Task Listen(ChannelReader<Prediction> reader,
+    List<Prediction> log)
+{
+    await foreach (Prediction prediction in reader.ReadAllAsync())
+    {
+        DisplayImages(prediction, false);
+        if (prediction.Actual.Value != prediction.Predicted.Value)
+        {
+            log.Add(prediction);
+        }
+    }
+}
 
 static void DisplayImages(Prediction prediction, bool scroll)
 {
@@ -87,32 +114,4 @@ static void PrintSummary(Classifier classifier, int offset, int count, TimeSpan 
     Console.WriteLine($"Using {classifier.Name} -- Offset: {offset}   Count: {count}");
     Console.WriteLine($"Total time: {elapsed}");
     Console.WriteLine($"Total errors: {total_errors}");
-}
-
-static async Task Produce(ChannelWriter<Prediction> writer,
-    Classifier classifier, List<Record> validation, int threads)
-{
-    await Parallel.ForEachAsync(
-        validation,
-        new ParallelOptions() { MaxDegreeOfParallelism = threads },
-        async (imageData, token) =>
-        {
-            var result = await classifier.Predict(new(imageData.Value, imageData.Image));
-            await writer.WriteAsync(result, token);
-        });
-
-    writer.Complete();
-}
-
-static async Task Listen(ChannelReader<Prediction> reader,
-    List<Prediction> log)
-{
-    await foreach (Prediction prediction in reader.ReadAllAsync())
-    {
-        DisplayImages(prediction, false);
-        if (prediction.Actual.Value != prediction.Predicted.Value)
-        {
-            log.Add(prediction);
-        }
-    }
 }

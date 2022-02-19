@@ -12,29 +12,26 @@ public abstract class Classifier
         TrainingData = trainingData;
     }
 
-    public Task<Prediction> Predict(Record input)
+    public Prediction Predict(Record input)
     {
-        return Task.Run(() =>
+        int best_total = int.MaxValue;
+        Record best = new(0, new List<int>());
+        foreach (Record candidate in TrainingData)
         {
-            int best_total = int.MaxValue;
-            Record best = new(0, new List<int>());
-            foreach (Record candidate in TrainingData)
+            int total = 0;
+            for (int i = 0; i < 784; i++)
             {
-                int total = 0;
-                for (int i = 0; i < 784; i++)
-                {
-                    int diff = Algorithm(input.Image[i], candidate.Image[i]);
-                    total += diff;
-                }
-                if (total < best_total)
-                {
-                    best_total = total;
-                    best = candidate;
-                }
+                int diff = Algorithm(input.Image[i], candidate.Image[i]);
+                total += diff;
             }
+            if (total < best_total)
+            {
+                best_total = total;
+                best = candidate;
+            }
+        }
 
-            return new Prediction(input, best);
-        });
+        return new Prediction(input, best);
     }
 }
 
