@@ -1,17 +1,23 @@
-using System;
-using System.Collections.Generic;
+namespace digits;
 
-namespace digits
+public abstract class Classifier
 {
-    public abstract class Classifier {
-        public string Name { get; set; }
-        public List<Record> TrainingData { get; set; }
-        public abstract int Algorithm(int input, int test);
+    public string Name { get; set; }
+    public List<Record> TrainingData { get; set; }
+    public abstract int Algorithm(int input, int test);
 
-        public Prediction Predict(Record input)
+    public Classifier(string name, List<Record> trainingData)
+    {
+        Name = name;
+        TrainingData = trainingData;
+    }
+
+    public Task<Prediction> Predict(Record input)
+    {
+        return Task.Run(() =>
         {
             int best_total = int.MaxValue;
-            Record best = new Record { Value = 0, Image = new List<int>() };
+            Record best = new(0, new List<int>());
             foreach (Record candidate in TrainingData)
             {
                 int total = 0;
@@ -27,36 +33,34 @@ namespace digits
                 }
             }
 
-            return new Prediction { Actual = input, Predicted = best };
-        }
+            return new Prediction(input, best);
+        });
+    }
+}
+
+public class ManhattanClassifier : Classifier
+{
+    public ManhattanClassifier(List<Record> training_data) :
+        base("Manhattan Classifier", training_data)
+    {
     }
 
-    public class ManhattanClassifier: Classifier 
+    public override int Algorithm(int input, int test)
     {
-        public ManhattanClassifier(List<Record> training_data)
-        {
-            this.Name = "Manhattan Classifier";
-            this.TrainingData = training_data;
-        }
+        return Math.Abs(input - test);
+    }
+}
 
-        public override int Algorithm(int input, int test)
-        {
-            return Math.Abs(input - test);
-        }
+public class EuclideanClassifier : Classifier
+{
+    public EuclideanClassifier(List<Record> training_data)
+        : base("Euclidean Classifier", training_data)
+    {
     }
 
-    public class EuclideanClassifier: Classifier
+    public override int Algorithm(int input, int test)
     {
-        public EuclideanClassifier(List<Record> training_data)
-        {
-            this.Name = "Euclidean Classifier";
-            this.TrainingData = training_data;
-        }
-
-        public override int Algorithm(int input, int test)
-        {
-            var diff = input - test;
-            return diff * diff;
-        }
+        var diff = input - test;
+        return diff * diff;
     }
 }

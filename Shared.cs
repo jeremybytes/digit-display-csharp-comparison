@@ -1,13 +1,5 @@
-using System.Collections.Generic;
-
-namespace digits {
-    public class Record {
-        public int Value { get; set; }
-        public List<int> Image { get; set; }
-    }
-
-    public class Prediction {
-        public Record Actual { get; set; }
-        public Record Predicted { get; set; }
-    }
+namespace digits
+{
+    public record Record (int Value, List<int> Image);
+    public record Prediction (Record Actual, Record Predicted);
 }
