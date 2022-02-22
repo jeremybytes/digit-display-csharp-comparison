@@ -41,7 +41,7 @@ public class FileLoader
             image.Add(item);
         }
 
-        return new Record(value, image);
+        return new Record(value, image.ToArray());
     }
 
     private static (List<Record>, List<Record>) SplitDataSets(List<Record> data, int offset, int count)
