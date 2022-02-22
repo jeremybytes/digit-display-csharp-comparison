@@ -1,4 +1,5 @@
-﻿using digits;
+﻿using System.Buffers;
+using digits;
 using digit_console;
 using System.Threading.Channels;
 using CommandLine;
@@ -92,21 +93,23 @@ static async Task Listen(ChannelReader<Prediction> reader,
     }
 }
 
+string Spaces = new string(' ', 46);
+string EqualsLine = new string('=', 115);
+
 static void DisplayImages(Prediction prediction, bool scroll)
 {
     if (!scroll)
     {
         Console.SetCursorPosition(0, 0);
     }
-    var image = Display.GetImagesAsString(prediction.Actual.Image, prediction.Predicted.Image);
-    var output = $"Actual: {prediction.Actual.Value} ";
-    output += new string(' ', 46);
-    output += $" | Predicted: {prediction.Predicted.Value}";
-    output += "\n";
-    output += image;
-    output += "\n";
-    output += new string('=', 115);
+    const int length = 784 * 4 + 4 * 28;
+    var chars = ArrayPool<char>.Shared.Rent(length);
+    Display.GetImagesChars(prediction.Actual.Image, prediction.Predicted.Image, chars);
+    var output = $"Actual: {prediction.Actual.Value} {Strings.Spaces46} | Predicted: {prediction.Predicted.Value}";
     Console.WriteLine(output);
+    Console.WriteLine(chars, 0, length);
+    Console.WriteLine(Strings.Equals115);
+    ArrayPool<char>.Shared.Return(chars);
 }
 
 static void PrintSummary(Classifier classifier, int offset, int count, TimeSpan elapsed, int total_errors)

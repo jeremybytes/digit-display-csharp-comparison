@@ -15,7 +15,7 @@ public abstract class Classifier
     public Prediction Predict(Record input)
     {
         int best_total = int.MaxValue;
-        Record best = new(0, new List<int>());
+        Record best = new(0, Array.Empty<int>());
         foreach (Record candidate in TrainingData)
         {
             int total = 0;

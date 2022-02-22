@@ -1,41 +1,42 @@
+using System.Buffers;
+using System.Runtime.InteropServices;
+
 namespace digit_console;
 
 public class Display
 {
-    public static string GetImagesAsString(List<int> image1, List<int> image2)
+    public static void GetImagesChars(int[] image1, int[] image2, Span<char> span)
     {
-        var first_image = GetImageAsString(image1);
-        var first = first_image.Split("\n");
-        var second_image = GetImageAsString(image2);
-        var second = second_image.Split("\n");
-        string result = "";
+
+        var first = image1.AsSpan();
+        var second = image2.AsSpan();
+
         for (int i = 0; i < 28; i++)
         {
-            result += first[i];
-            result += " | ";
-            result += second[i];
-            result += "\n";
-        }
-        return result;
-    }
-
-    public static string GetImageAsString(List<int> image)
-    {
-        string result = "";
-        int count = 0;
-        foreach (int pixel in image)
-        {
-            if (count % 28 == 0 && count != 0)
+            foreach (var pixel in first.Slice(0, 28))
             {
-                result += "\n";
+                span[0] = span[1] = GetDisplayCharForPixel(pixel);
+                span = span.Slice(2);
             }
-            var output_char = GetDisplayCharForPixel(pixel);
-            result += output_char;
-            result += output_char;
-            count++;
+
+            first = first.Slice(28);
+
+            span[0] = ' ';
+            span[1] = '|';
+            span[2] = ' ';
+            span = span.Slice(3);
+
+            foreach (var pixel in second.Slice(0, 28))
+            {
+                span[0] = span[1] = GetDisplayCharForPixel(pixel);
+                span = span.Slice(2);
+            }
+
+            second = second.Slice(28);
+
+            span[0] = '\n';
+            span = span.Slice(1);
         }
-        result += "\n";
-        return result;
     }
 
     private static char GetDisplayCharForPixel(int pixel)
