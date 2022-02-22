@@ -93,9 +93,6 @@ static async Task Listen(ChannelReader<Prediction> reader,
     }
 }
 
-string Spaces = new string(' ', 46);
-string EqualsLine = new string('=', 115);
-
 static void DisplayImages(Prediction prediction, bool scroll)
 {
     if (!scroll)
