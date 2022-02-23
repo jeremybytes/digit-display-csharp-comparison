@@ -3,10 +3,10 @@ namespace digits;
 public abstract class Classifier
 {
     public string Name { get; set; }
-    public List<Record> TrainingData { get; set; }
+    public Record[] TrainingData { get; set; }
     public abstract int Algorithm(int input, int test);
 
-    public Classifier(string name, List<Record> trainingData)
+    public Classifier(string name, Record[] trainingData)
     {
         Name = name;
         TrainingData = trainingData;
@@ -15,7 +15,7 @@ public abstract class Classifier
     public Prediction Predict(Record input)
     {
         int best_total = int.MaxValue;
-        Record best = new(0, new List<int>());
+        Record best = new(0, new int[0]);
         foreach (Record candidate in TrainingData)
         {
             int total = 0;
@@ -37,7 +37,7 @@ public abstract class Classifier
 
 public class ManhattanClassifier : Classifier
 {
-    public ManhattanClassifier(List<Record> training_data) :
+    public ManhattanClassifier(Record[] training_data) :
         base("Manhattan Classifier", training_data)
     {
     }
@@ -50,7 +50,7 @@ public class ManhattanClassifier : Classifier
 
 public class EuclideanClassifier : Classifier
 {
-    public EuclideanClassifier(List<Record> training_data)
+    public EuclideanClassifier(Record[] training_data)
         : base("Euclidean Classifier", training_data)
     {
     }

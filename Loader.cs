@@ -2,7 +2,7 @@ namespace digits;
 
 public class FileLoader
 {
-    public static (List<Record>, List<Record>) GetData(string filename, int offset, int count)
+    public static (Record[], Record[]) GetData(string filename, int offset, int count)
     {
         var contents = File.ReadAllLines(filename).Where(s => s.Trim().Length > 0).Skip(1);
         List<Record> data = new();
@@ -14,7 +14,7 @@ public class FileLoader
         }
 
         var (training, validation) = SplitDataSets(data, offset, count);
-        return (training, validation);
+        return (training.ToArray(), validation.ToArray());
     }
 
     private static List<int> SplitRawData(string data)
@@ -41,35 +41,35 @@ public class FileLoader
             image.Add(item);
         }
 
-        return new Record(value, image);
+        return new Record(value, image.ToArray());
     }
 
-    private static (List<Record>, List<Record>) SplitDataSets(List<Record> data, int offset, int count)
+    private static (Record[], Record[]) SplitDataSets(List<Record> data, int offset, int count)
     {
         var training = data.GetRange(0, offset);
         training.AddRange(data.GetRange(offset + count, (data.Count - offset - count)));
         var validation = data.GetRange(offset, count);
-        return (training, validation);
+        return (training.ToArray(), validation.ToArray());
     }
 
-    public static List<List<Record>> ChunkData(List<Record> data, int chunks)
-    {
-        List<List<Record>> results = new();
-        var chunk_size = data.Count / chunks;
-        var remainder = data.Count % chunks;
-        for (int i = 0; i < chunks; i++)
-        {
-            if (i != chunks - 1)
-            {
-                var chunk = data.GetRange(i * chunk_size, chunk_size);
-                results.Add(chunk);
-            }
-            else
-            {
-                var chunk = data.GetRange(i * chunk_size, chunk_size + remainder);
-                results.Add(chunk);
-            }
-        }
-        return results;
-    }
+    // public static List<List<Record>> ChunkData(List<Record> data, int chunks)
+    // {
+    //     List<List<Record>> results = new();
+    //     var chunk_size = data.Count / chunks;
+    //     var remainder = data.Count % chunks;
+    //     for (int i = 0; i < chunks; i++)
+    //     {
+    //         if (i != chunks - 1)
+    //         {
+    //             var chunk = data.GetRange(i * chunk_size, chunk_size);
+    //             results.Add(chunk);
+    //         }
+    //         else
+    //         {
+    //             var chunk = data.GetRange(i * chunk_size, chunk_size + remainder);
+    //             results.Add(chunk);
+    //         }
+    //     }
+    //     return results;
+    // }
 }
