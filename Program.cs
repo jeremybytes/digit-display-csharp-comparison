@@ -2,6 +2,8 @@
 using digit_console;
 using System.Threading.Channels;
 using CommandLine;
+using System.Text;
+using System.Diagnostics;
 
 int offset = 0;
 int count = 10;
@@ -26,35 +28,38 @@ CommandLine.Parser.Default.ParseArguments<Configuration>(args)
         Environment.Exit(0);
     });
 
+threads = Environment.ProcessorCount;
+
 List<Prediction> errors = new();
+
+var sw = Stopwatch.StartNew();
 
 var (training, validation) = FileLoader.GetData("train.csv", offset, count);
 Console.Clear();
-Console.WriteLine("Data Load Complete...");
+Console.WriteLine($"Data Load Complete...{sw.ElapsedMilliseconds} ms");
+
+sw.Restart();
 
 Classifier classifier = classifier_option
     switch
 {
-    "euclidean" => new EuclideanClassifier(training),
-    "manhattan" => new ManhattanClassifier(training),
-    _ => new EuclideanClassifier(training),
+    "manhattan" => new Classifier<ManhattanAlgo>("Manhattan Classifier", training),
+    "euclidean" or _ => new Classifier<EuclideanAlgo>("Euclidean Classifier", training),
 };
 
-var start = DateTime.Now;
-
 var channel = Channel.CreateUnbounded<Prediction>();
+
 var listener = Listen(channel.Reader, errors);
-
 var producer = Produce(channel.Writer, classifier, validation, threads);
-await producer;
 
+await producer;
 await listener;
 
-var elapsed = DateTime.Now - start;
+var elapsed = sw.Elapsed;
 
 PrintSummary(classifier, offset, count, elapsed, errors.Count);
 Console.WriteLine("Press any key to show errors...");
-Console.ReadLine();
+Console.ReadKey();
 
 foreach (var item in errors)
 {
@@ -65,7 +70,7 @@ PrintSummary(classifier, offset, count, elapsed, errors.Count);
 
 
 static async Task Produce(ChannelWriter<Prediction> writer,
-    Classifier classifier, List<Record> validation, int threads)
+    Classifier classifier, Record[] validation, int threads)
 {
     await Parallel.ForEachAsync(
         validation,
@@ -98,14 +103,17 @@ static void DisplayImages(Prediction prediction, bool scroll)
     {
         Console.SetCursorPosition(0, 0);
     }
-    var image = Display.GetImagesAsString(prediction.Actual.Image, prediction.Predicted.Image);
-    var output = $"Actual: {prediction.Actual.Value} ";
-    output += new string(' ', 46);
-    output += $" | Predicted: {prediction.Predicted.Value}";
-    output += "\n";
-    output += image;
-    output += "\n";
-    output += new string('=', 115);
+    
+    var output = new StringBuilder("Actual: ");
+    output.Append(prediction.Actual.Value);
+    output.Append(' ', 47);
+    output.Append(" | Predicted: ");
+    output.Append(prediction.Predicted.Value);
+    output.AppendLine();
+    Display.AppendImagesAsString(output, prediction.Actual.Image, prediction.Predicted.Image);
+    output.AppendLine();
+    output.Append('=', 115);
+
     Console.WriteLine(output);
 }
 
