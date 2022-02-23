@@ -4,18 +4,16 @@ namespace digit_console;
 
 public class Display
 {
-    public static string GetImagesAsString(StringBuilder result, int[] image1, int[] image2)
+    public static void GetImagesAsString(StringBuilder result, int[] image1, int[] image2)
     {
         var first = GetImageAsArray(image1);
         var second = GetImageAsArray(image2);
-        //StringBuilder result = new();
         for (int i = 0; i < 28; i++)
         {
             result.Append(first[i]);
             result.Append(" | ");
             result.AppendLine(second[i]);
         }
-        return result.ToString();
     }
 
     public static string[] GetImageAsArray(int[] image)
