@@ -1,52 +1,52 @@
+using System.Text;
+
 namespace digit_console;
 
 public class Display
 {
-    public static string GetImagesAsString(List<int> image1, List<int> image2)
+    public static void AppendImagesAsString(StringBuilder sb, int[] image1, int[] image2)
     {
-        var first_image = GetImageAsString(image1);
-        var first = first_image.Split("\n");
-        var second_image = GetImageAsString(image2);
-        var second = second_image.Split("\n");
-        string result = "";
-        for (int i = 0; i < 28; i++)
+        string[] first = GetImageAsStrings(image1);
+        string[] second = GetImageAsStrings(image2);
+
+        for (int i = 0; i < first.Length; i++)
         {
-            result += first[i];
-            result += " | ";
-            result += second[i];
-            result += "\n";
+            sb.Append(first[i]);
+            sb.Append(" | ");
+            sb.Append(second[i]);
+            sb.AppendLine();
         }
-        return result;
     }
 
-    public static string GetImageAsString(List<int> image)
+    public static string[] GetImageAsStrings(int[] image)
     {
-        string result = "";
-        int count = 0;
-        foreach (int pixel in image)
+        List<string> lines = new();
+        StringBuilder line = new();
+
+        for (int i = 0; i < image.Length; i++)
         {
-            if (count % 28 == 0 && count != 0)
+            var output_char = GetDisplayCharForPixel(image[i]);
+            line.Append(output_char);
+            line.Append(output_char);
+
+            if (i % 28 == 0)
             {
-                result += "\n";
+                lines.Add(line.ToString());
+                line.Clear();
             }
-            var output_char = GetDisplayCharForPixel(pixel);
-            result += output_char;
-            result += output_char;
-            count++;
         }
-        result += "\n";
-        return result;
+        return lines.ToArray();
     }
 
     private static char GetDisplayCharForPixel(int pixel)
     {
         return pixel switch
         {
-            var low when low > 16 && low < 32 => '.',
-            var mid when mid >= 32 && mid < 64 => ':',
-            var high when high >= 64 && high < 160 => 'o',
-            var reallyHigh when reallyHigh >= 160 && reallyHigh < 224 => 'O',
-            var reallyReallyHigh when reallyReallyHigh >= 224 => '@',
+            > 16 and < 32 => '.',
+            >= 32 and < 64 => ':',
+            >= 64 and < 160 => 'o',
+            >= 160 and < 224 => 'O',
+            >= 224 => '@',
             _ => ' ',
         };
     }
