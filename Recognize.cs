@@ -14,14 +14,18 @@ public abstract class Classifier
 
     public Prediction Predict(Record input)
     {
+        Func<int, int, int> algorithm = Algorithm;
+
+        int[] inputImage = input.Image;
         int best_total = int.MaxValue;
         Record best = new(0, new int[0]);
         foreach (Record candidate in TrainingData)
         {
             int total = 0;
+            int[] candidateImage = candidate.Image;
             for (int i = 0; i < 784; i++)
             {
-                int diff = Algorithm(input.Image[i], candidate.Image[i]);
+                int diff = algorithm(inputImage[i], candidateImage[i]);
                 total += diff;
             }
             if (total < best_total)
