@@ -2,6 +2,7 @@
 using digit_console;
 using System.Threading.Channels;
 using CommandLine;
+using System.Text;
 
 int offset = 0;
 int count = 10;
@@ -43,11 +44,11 @@ Classifier classifier = classifier_option
 var start = DateTime.Now;
 
 var channel = Channel.CreateUnbounded<Prediction>();
+
 var listener = Listen(channel.Reader, errors);
-
 var producer = Produce(channel.Writer, classifier, validation, threads);
-await producer;
 
+await producer;
 await listener;
 
 var elapsed = DateTime.Now - start;
@@ -65,7 +66,7 @@ PrintSummary(classifier, offset, count, elapsed, errors.Count);
 
 
 static async Task Produce(ChannelWriter<Prediction> writer,
-    Classifier classifier, List<Record> validation, int threads)
+    Classifier classifier, Record[] validation, int threads)
 {
     await Parallel.ForEachAsync(
         validation,
@@ -98,14 +99,12 @@ static void DisplayImages(Prediction prediction, bool scroll)
     {
         Console.SetCursorPosition(0, 0);
     }
-    var image = Display.GetImagesAsString(prediction.Actual.Image, prediction.Predicted.Image);
-    var output = $"Actual: {prediction.Actual.Value} ";
-    output += new string(' ', 46);
-    output += $" | Predicted: {prediction.Predicted.Value}";
-    output += "\n";
-    output += image;
-    output += "\n";
-    output += new string('=', 115);
+    StringBuilder output = new();
+    output.Append($"Actual: {prediction.Actual.Value} ");
+    output.Append(' ', 46);
+    output.AppendLine($" | Predicted: {prediction.Predicted.Value}");
+    Display.GetImagesAsString(output, prediction.Actual.Image, prediction.Predicted.Image);
+    output.Append('=', 115);
     Console.WriteLine(output);
 }
 
