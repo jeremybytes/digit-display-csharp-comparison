@@ -14,8 +14,6 @@ public abstract class Classifier
 
     public Prediction Predict(Record input)
     {
-        Func<int, int, int> algorithm = Algorithm;
-
         int[] inputImage = input.Image;
         int best_total = int.MaxValue;
         Record best = new(0, new int[0]);
@@ -25,7 +23,7 @@ public abstract class Classifier
             int[] candidateImage = candidate.Image;
             for (int i = 0; i < 784; i++)
             {
-                int diff = algorithm(inputImage[i], candidateImage[i]);
+                int diff = Algorithm(inputImage[i], candidateImage[i]);
                 total += diff;
             }
             if (total < best_total)
